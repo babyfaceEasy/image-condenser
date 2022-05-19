@@ -26,15 +26,33 @@ func NewSpacesService(s3Client *s3.S3) Spaces {
 func getImageName(fullPath string) string {
 	pathSlice := strings.Split(fullPath, "/")
 
-	return pathSlice[len(pathSlice) - 1]
+	return pathSlice[len(pathSlice)-1]
 }
 
+func (sp Spaces) getImageExtension(imageName string) string {
+	imageNameSlice := strings.Split(imageName, ".")
+	if len(imageNameSlice) < 2 {
+		return ""
+	}
+
+	return imageNameSlice[len(imageNameSlice)-1]
+}
+
+func (sp Spaces) getContentType(extension string) string {
+	contentType := "binary/octet-stream"
+
+	if extension == "png" || extension == "jpeg" || extension == "gif" || extension == "jpg" {
+		contentType = "image/" + extension
+	}
+
+	return contentType
+}
 
 func (sp Spaces) getPicturePath(fullPath string) string {
 	pathSlice := strings.Split(fullPath, "/")
 	pathOnly := ""
 
-	for i:=0; i < len(pathSlice)-1; i++ {
+	for i := 0; i < len(pathSlice)-1; i++ {
 		pathOnly += fmt.Sprintf("%s/", pathSlice[i])
 	}
 
@@ -74,7 +92,7 @@ func (sp Spaces) GetObject(filePath string) (string, error) {
 	return imageName, nil
 }
 
-func (sp Spaces) UploadObject(fileName string, originalImagePath string) (string,error) {
+func (sp Spaces) UploadObject(fileName string, originalImagePath string) (string, error) {
 	imgFile, err := os.Open(filepath.Join(imagePath, fileName))
 	if err != nil {
 		return "", err
@@ -84,15 +102,19 @@ func (sp Spaces) UploadObject(fileName string, originalImagePath string) (string
 	folder := os.Getenv("DO_FOLDER")
 
 	pathOnly := sp.getPicturePath(originalImagePath)
-	key :=  pathOnly + fileName
+	key := pathOnly + fileName
 	key = fmt.Sprintf("%s/%s", folder, key)
+	ext := sp.getImageExtension(fileName)
+	contentType := sp.getContentType(ext)
 
 	//fmt.Println("key: ", key)
 
 	object := &s3.PutObjectInput{
-		Bucket: aws.String(bucket),
-		Key:    aws.String(key),
-		Body:   imgFile,
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+		Body:        imgFile,
+		ACL:         aws.String("public-read"),
+		ContentType: aws.String(contentType),
 	}
 
 	_, err = sp.s3Client.PutObject(object)
@@ -102,6 +124,30 @@ func (sp Spaces) UploadObject(fileName string, originalImagePath string) (string
 
 	return pathOnly + fileName, nil
 
+}
+
+func (sp Spaces) DeleteObject(fileName string, originalImagePath string) error {
+
+	bucket := os.Getenv("DO_BUCKET")
+	folder := os.Getenv("DO_FOLDER")
+
+	pathOnly := sp.getPicturePath(originalImagePath)
+	key := pathOnly + fileName
+	key = fmt.Sprintf("%s/%s", folder, key)
+
+	//fmt.Println("key: ", key)
+
+	input := &s3.DeleteObjectInput{
+		Bucket:      aws.String(bucket),
+		Key:         aws.String(key),
+	}
+
+	_, err := sp.s3Client.DeleteObject(input)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (sp Spaces) ListAllObjectsInAFolder(folderName string) error {

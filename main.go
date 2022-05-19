@@ -50,18 +50,20 @@ func initThumbnailGeneration(dbService services.DB, spacesService services.Space
 		fmt.Printf("%+v\n", prdt)
 
 		// if no picture path continue
-		if len(prdt.PicturePath) <= 0 {
+		if prdt.PicturePath.Valid && len(prdt.PicturePath.String) <= 0 {
 			continue
 		}
 
 		// no need to generate if thumbnail exists
+		/*
 		if prdt.ThumbnailPath.Valid && len(prdt.ThumbnailPath.String) > 0 {
 			continue
 		}
+		*/
 
 		// download image
-		fmt.Printf("Compressing image: %s\n", prdt.PicturePath)
-		imageName, err := spacesService.GetObject(prdt.PicturePath)
+		fmt.Printf("Compressing image: %s\n", prdt.PicturePath.String)
+		imageName, err := spacesService.GetObject(prdt.PicturePath.String)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -72,8 +74,14 @@ func initThumbnailGeneration(dbService services.DB, spacesService services.Space
 			fmt.Println(err.Error())
 		}
 
+		// delete thumbnail if one exist already
+		if prdt.ThumbnailPath.Valid && len(prdt.ThumbnailPath.String) > 0 {
+			//delete the image first
+			spacesService.DeleteObject(thumbnailName, prdt.PicturePath.String)
+		}
+
 		// upload thumbnail
-		thumbnailPath, err := spacesService.UploadObject(thumbnailName, prdt.PicturePath)
+		thumbnailPath, err := spacesService.UploadObject(thumbnailName, prdt.PicturePath.String)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -95,7 +103,7 @@ func initThumbnailGeneration(dbService services.DB, spacesService services.Space
 			fmt.Println(err.Error())
 		}
 
-		fmt.Printf("Done compressing image: %s\n", prdt.PicturePath)
+		fmt.Printf("Done compressing image: %s\n", prdt.PicturePath.String)
 	}
 
 	return nil

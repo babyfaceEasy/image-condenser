@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,6 +20,12 @@ var (
 type ImageService struct{}
 
 func NewImageService() ImageService {
+	// create imagepath if it doesn't exist
+	if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+		if err := os.Mkdir(imagePath, os.ModePerm); err != nil {
+			log.Fatal(err.Error())
+		}
+	}
 	return ImageService{}
 }
 
@@ -55,6 +62,11 @@ func (is ImageService) GenerateThumbnail(imageName string) (string,error) {
 }
 
 func (is ImageService) DeleteImage(imageName string) error {
+	// check if file exists
+	if _, err := os.Stat(filepath.Join(imagePath, imageName)); os.IsNotExist(err) {
+		fmt.Printf("Error: The following file was not found when trying to delete: %s\n", filepath.Join(imagePath, imageName))
+		return nil
+	}
 	err := os.Remove(filepath.Join(imagePath, imageName))
 	if err != nil {
 		return err

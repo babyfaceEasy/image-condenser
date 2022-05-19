@@ -4,6 +4,6 @@ import "database/sql"
 
 type Stock struct {
 	ID            int
-	PicturePath   string
+	PicturePath   sql.NullString
 	ThumbnailPath sql.NullString
 }

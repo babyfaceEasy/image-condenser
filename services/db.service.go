@@ -33,7 +33,7 @@ func (db DB) GetAllProduct(columns string) ([]models.Stock, error) {
 
 	stocks := make([]models.Stock, 0)
 	// https://stackoverflow.com/questions/12939690/mysql-query-for-empty-and-null-value-together
-	results, err := db.dbConn.Query("SELECT id, picture_path, thumbnail_path FROM stocks WHERE deleted_at IS NULL ORDER BY id LIMIT 1")
+	results, err := db.dbConn.Query("SELECT id, picture_path, thumbnail_path FROM stocks WHERE deleted_at IS NULL ORDER BY id")
 	if err != nil {
 		return stocks, err
 	}
