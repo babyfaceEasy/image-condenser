@@ -1,0 +1,13 @@
+# no environmeent variables
+.env
+
+# nothing inside the the images folder
+images/*
+
+# no images
+*.jpeg
+*.png
+*.jpg
+*.gif
+
+hold.txt
