@@ -29,6 +29,21 @@ func getImageName(fullPath string) string {
 	return pathSlice[len(pathSlice)-1]
 }
 
+func (sp Spaces) IsFileAnImage(imagePath string) bool {
+	imageName :=  getImageName(imagePath)
+	ext := sp.getImageExtension(imageName)
+
+	if ext == "" {
+		return false
+	}
+
+	if ext == "png" || ext == "jpeg" || ext == "gif" || ext == "jpg" {
+		return true
+	}
+
+	return false
+}
+
 func (sp Spaces) getImageExtension(imageName string) string {
 	imageNameSlice := strings.Split(imageName, ".")
 	if len(imageNameSlice) < 2 {

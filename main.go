@@ -50,7 +50,7 @@ func initThumbnailGeneration(dbService services.DB, spacesService services.Space
 		fmt.Printf("%+v\n", prdt)
 
 		// if no picture path continue
-		if prdt.PicturePath.Valid && len(prdt.PicturePath.String) <= 0 {
+		if !prdt.PicturePath.Valid || len(prdt.PicturePath.String) <= 0 {
 			continue
 		}
 
@@ -60,6 +60,11 @@ func initThumbnailGeneration(dbService services.DB, spacesService services.Space
 			continue
 		}
 		*/
+
+		// only work on images
+		if !spacesService.IsFileAnImage(prdt.PicturePath.String) {
+			continue
+		}
 
 		// download image
 		fmt.Printf("Compressing image: %s\n", prdt.PicturePath.String)
