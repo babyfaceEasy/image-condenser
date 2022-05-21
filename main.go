@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"thumbnail-generator/configs"
+	"thumbnail-generator/di"
 	"thumbnail-generator/services"
 
 	"github.com/joho/godotenv"
@@ -28,10 +29,9 @@ func main() {
 	}
 	defer dbConn.Close()
 
-	dbService := services.NewDBService(dbConn)
-	spacesService := services.NewSpacesService(s3Client)
-	imageService := services.NewImageService()
-
+	dbService := di.InitializeDBService(dbConn)
+	spacesService := di.IntializeSpacesService(s3Client)
+	imageService := di.InitializeImageService()
 
 	err = initThumbnailGeneration(dbService, spacesService, imageService)
 	if err != nil {
@@ -56,9 +56,9 @@ func initThumbnailGeneration(dbService services.DB, spacesService services.Space
 
 		// no need to generate if thumbnail exists
 		/*
-		if prdt.ThumbnailPath.Valid && len(prdt.ThumbnailPath.String) > 0 {
-			continue
-		}
+			if prdt.ThumbnailPath.Valid && len(prdt.ThumbnailPath.String) > 0 {
+				continue
+			}
 		*/
 
 		// only work on images

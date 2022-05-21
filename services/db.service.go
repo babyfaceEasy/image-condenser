@@ -41,7 +41,7 @@ func (db DB) GetAllProduct(columns string) ([]models.Stock, error) {
 	ctx := context.Background()
 	ctx, _ = context.WithTimeout(ctx, 300*time.Millisecond)
 	// https://stackoverflow.com/questions/12939690/mysql-query-for-empty-and-null-value-together
-	results, err := db.dbConn.QueryContext(ctx, "SELECT id, picture_path, thumbnail_path FROM stocks WHERE deleted_at IS NULL and picture_path IS NOT NULL ORDER BY id desc LIMIT 1000")
+	results, err := db.dbConn.QueryContext(ctx, "SELECT id, picture_path, thumbnail_path FROM stocks WHERE deleted_at IS NULL and picture_path IS NOT NULL ORDER BY id desc LIMIT 1")
 	if err != nil {
 		return stocks, err
 	}
