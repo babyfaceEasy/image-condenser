@@ -1,10 +1,14 @@
 package services
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"thumbnail-generator/models"
+	"time"
 )
+
+// db: https://www.sohamkamani.com/golang/sql-database/
 
 /*
 Handles the interaction with the database
@@ -21,7 +25,9 @@ func NewDBService(dbConn *sql.DB) DB {
 // tutorials : https://learningprogramming.net/golang/golang-and-mysql/update-entity-in-golang-and-mysql-database/
 
 func (db DB) UpdateStockThumbnailPath(path string, prdtID int) error {
-	_, err := db.dbConn.Exec("UPDATE stocks SET thumbnail_path = ? WHERE id = ?", path, prdtID)
+	ctx := context.Background()
+	ctx, _ = context.WithTimeout(ctx, 300*time.Millisecond)
+	_, err := db.dbConn.ExecContext(ctx, "UPDATE stocks SET thumbnail_path = ? WHERE id = ?", path, prdtID)
 	if err != nil {
 		return err
 	}
@@ -32,8 +38,10 @@ func (db DB) UpdateStockThumbnailPath(path string, prdtID int) error {
 func (db DB) GetAllProduct(columns string) ([]models.Stock, error) {
 
 	stocks := make([]models.Stock, 0)
+	ctx := context.Background()
+	ctx, _ = context.WithTimeout(ctx, 300*time.Millisecond)
 	// https://stackoverflow.com/questions/12939690/mysql-query-for-empty-and-null-value-together
-	results, err := db.dbConn.Query("SELECT id, picture_path, thumbnail_path FROM stocks WHERE deleted_at IS NULL and picture_path IS NOT NULL ORDER BY id desc LIMIT 1000")
+	results, err := db.dbConn.QueryContext(ctx, "SELECT id, picture_path, thumbnail_path FROM stocks WHERE deleted_at IS NULL and picture_path IS NOT NULL ORDER BY id desc LIMIT 1000")
 	if err != nil {
 		return stocks, err
 	}
